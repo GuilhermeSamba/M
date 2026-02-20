@@ -4969,6 +4969,11 @@ function MineKhan() {
 			p.rx = -Math.PI / 2
 		}
 	}
+	// Drag-to-look fallback when Pointer Lock is unavailable
+	let isDraggingCamera = false
+	let lastDragX = 0
+	let lastDragY = 0
+
 	function trackMouse(e) {
 		cursor("")
 		mouseX = e.x
@@ -4978,13 +4983,35 @@ function MineKhan() {
 		Slider.draw()
 		Slider.drag()
 	}
-	document.onmousemove = trackMouse
+
+	function handleDragLook(e) {
+		if (!isDraggingCamera) return
+		if (screen !== "play") return
+		const dx = e.clientX - lastDragX
+		const dy = e.clientY - lastDragY
+		lastDragX = e.clientX
+		lastDragY = e.clientY
+		// Simulate movementX/Y for mmoved
+		const fakeEvent = { movementX: dx, movementY: dy }
+		mmoved(fakeEvent)
+	}
+
+	document.onmousemove = function(e) {
+		if (doc.pointerLockElement === canvas) {
+			mmoved(e)
+		} else if (isDraggingCamera && screen === "play") {
+			handleDragLook(e)
+		} else {
+			trackMouse(e)
+		}
+	}
+
 	document.onpointerlockchange = function() {
 		if (doc.pointerLockElement === canvas) {
-			doc.onmousemove = mmoved
+			// pointer lock acquired, drag mode not needed
+			isDraggingCamera = false
 		} else {
-			doc.onmousemove = trackMouse
-			if (screen === "play" && !freezeFrame) {
+			if (screen === "play" && !freezeFrame && !isDraggingCamera) {
 				changeScene("pause")
 				unpauseDelay = Date.now() + 1000
 			}
@@ -4997,6 +5024,12 @@ function MineKhan() {
 		mouseX = e.x
 		mouseY = e.y
 		mouseDown = true
+		// Start drag-look if pointer lock not available
+		if (screen === "play" && doc.pointerLockElement !== canvas && e.button === 0) {
+			isDraggingCamera = true
+			lastDragX = e.clientX
+			lastDragY = e.clientY
+		}
 		let block, index
 		switch(e.button) {
 			case 0:
@@ -5021,6 +5054,22 @@ function MineKhan() {
 		if(screen === "play") {
 			if (doc.pointerLockElement !== canvas) {
 				getPointer()
+				// Also process game actions in drag mode (pointer lock may be unavailable)
+				place = false
+				if(e.button === 0) {
+					if(Key.control) {
+						place = true
+					} else {
+						if(isDraggingCamera) changeWorldBlock(0)
+					}
+				}
+				holding = inventory.hotbar[inventory.hotbarSlot]
+				if(e.button === 2 && holding) {
+					place = true
+				}
+				if(place) {
+					newWorldBlock()
+				}
 				p.lastBreak = Date.now()
 			} else {
 				place = false
@@ -5046,6 +5095,9 @@ function MineKhan() {
 		Button.click()
 		Slider.click()
 	}
+	document.addEventListener('mouseup', function(e) {
+		if (e.button === 0) isDraggingCamera = false
+	})
 	canvas.onmouseup = function(e) {
 		switch(e.button) {
 			case 0:
