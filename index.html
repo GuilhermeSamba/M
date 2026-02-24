@@ -6,37 +6,113 @@
 <title>NEON.HANDS.VR — Multiplayer</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:#060d18;color:#fff;font-family:'Segoe UI',monospace;overflow:hidden;user-select:none;touch-action:none;}
 canvas{display:block;}
 .hidden{display:none!important;}
 
-/* AUTH */
-.auth-overlay{position:fixed;inset:0;background:rgba(6,13,24,0.97);display:flex;align-items:center;justify-content:center;z-index:9000;backdrop-filter:blur(8px);}
-.auth-card{background:#0a1526;border:2px solid #00ccff;border-radius:16px;padding:28px 22px;width:90%;max-width:340px;text-align:center;box-shadow:0 0 40px rgba(0,204,255,0.2);}
-.auth-title{color:#00ccff;font-size:20px;font-weight:bold;letter-spacing:3px;margin-bottom:3px;text-shadow:0 0 20px rgba(0,204,255,0.5);}
-.auth-sub{color:#334;font-size:10px;letter-spacing:2px;margin-bottom:16px;}
-.auth-tabs{display:flex;border:1px solid #00ccff44;border-radius:6px;overflow:hidden;margin-bottom:14px;}
-.auth-tab{flex:1;padding:9px;background:transparent;color:#00ccff;border:none;cursor:pointer;font-weight:bold;font-size:11px;transition:.2s;}
-.auth-tab.active{background:#00ccff;color:#060d18;}
+/* ===== AUTH — ROBLOX STYLE ===== */
+.auth-overlay{
+  position:fixed;inset:0;
+  background:radial-gradient(ellipse at 50% 0%, #0d1b2a 0%, #070d14 70%);
+  display:flex;align-items:center;justify-content:center;
+  z-index:9000;
+}
+.auth-card{
+  background:#111923;
+  border:1px solid #1e3248;
+  border-radius:20px;
+  padding:32px 24px 24px;
+  width:92%;max-width:360px;
+  text-align:center;
+  box-shadow:0 24px 64px rgba(0,0,0,0.7),0 0 0 1px rgba(0,204,255,0.06);
+  position:relative;overflow:hidden;
+}
+.auth-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,#00ccff,#0088ff,#00ccff,transparent);
+}
+/* logo block */
+.auth-logo-wrap{margin-bottom:20px;}
+.auth-logo-icon{font-size:40px;line-height:1;margin-bottom:4px;}
+.auth-title{
+  color:#fff;font-size:22px;font-weight:900;
+  letter-spacing:2px;margin-bottom:2px;
+  text-shadow:0 0 30px rgba(0,204,255,0.4);
+  font-family:'Segoe UI',sans-serif;
+}
+.auth-title span{color:#00ccff;}
+.auth-sub{color:#3a5068;font-size:10px;letter-spacing:2px;margin-bottom:0;}
+/* tabs */
+.auth-tabs{
+  display:flex;gap:0;
+  background:#0a1220;border:1px solid #1e3248;
+  border-radius:10px;overflow:hidden;
+  margin-bottom:18px;padding:3px;gap:3px;
+}
+.auth-tab{
+  flex:1;padding:9px 4px;
+  background:transparent;color:#3a5068;
+  border:none;cursor:pointer;font-weight:700;font-size:11px;
+  letter-spacing:.5px;border-radius:7px;
+  transition:all .2s;
+}
+.auth-tab.active{background:#162235;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.4);}
 .auth-tab:active{opacity:.8;}
-input,select{width:100%;padding:11px 12px;margin:5px 0;border-radius:8px;border:1px solid #1a3a55;background:#060d18;color:#fff;font-size:13px;outline:none;transition:.2s;}
-input:focus,select:focus{border-color:#00ccff;box-shadow:0 0 8px rgba(0,204,255,0.15);}
+/* inputs */
+input,select{
+  width:100%;padding:12px 14px;margin:5px 0;
+  border-radius:10px;border:1.5px solid #1e3248;
+  background:#0a1220;color:#e8f0f8;
+  font-size:13px;outline:none;transition:.2s;
+  font-family:'Segoe UI',monospace;
+}
+input::placeholder{color:#2a4060;}
+input:focus,select:focus{border-color:#00aaff;background:#0c1828;box-shadow:0 0 0 3px rgba(0,170,255,0.1);}
 input[type="color"]{height:44px;cursor:pointer;padding:4px;}
-.btn{width:100%;padding:12px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:13px;letter-spacing:.5px;transition:.2s;margin-top:5px;}
+/* buttons */
+.btn{
+  width:100%;padding:13px;border:none;border-radius:10px;
+  font-weight:800;cursor:pointer;font-size:13px;
+  letter-spacing:.5px;transition:all .18s;margin-top:6px;
+  font-family:'Segoe UI',sans-serif;
+}
 .btn:active{transform:scale(.97);}
-.btn-cyan{background:#00ccff;color:#060d18;}
-.btn-dark{background:#0a1526;border:1px solid #1a3a55;color:#aaa;}
-.btn-dark:hover{border-color:#00ccff;color:#00ccff;}
-.btn-red{background:#1a0000;border:1px solid #ff4444;color:#ff4444;}
-.err{color:#ff4444;font-size:10px;min-height:13px;margin:2px 0;}
-.pstr{height:3px;border-radius:2px;background:#111;margin:-3px 0 5px;}
+.btn-cyan{
+  background:linear-gradient(135deg,#0092d0,#00b8e8);
+  color:#fff;
+  box-shadow:0 4px 16px rgba(0,184,232,0.35);
+}
+.btn-cyan:hover{box-shadow:0 6px 24px rgba(0,184,232,0.5);}
+.btn-green{
+  background:linear-gradient(135deg,#00943a,#00c04b);
+  color:#fff;
+  box-shadow:0 4px 16px rgba(0,192,75,0.35);
+}
+.btn-dark{
+  background:#0a1220;border:1.5px solid #1e3248;color:#5a7a9a;
+  box-shadow:none;
+}
+.btn-dark:hover{border-color:#00aaff;color:#00ccff;}
+.btn-red{background:#1a0505;border:1.5px solid #cc3333;color:#ff6666;}
+/* error */
+.err{color:#ff5555;font-size:10px;min-height:13px;margin:2px 0;}
+/* password strength */
+.pstr{height:3px;border-radius:2px;background:#0a1220;margin:0 0 6px;}
 .pstr-fill{height:100%;border-radius:2px;width:0%;transition:all .3s;background:#ff4444;}
-#pass-hint{font-size:9px;color:#446;margin:-3px 0 4px;}
+#pass-hint{font-size:9px;color:#2a4060;margin:-3px 0 5px;}
+/* divider */
+.auth-divider{display:flex;align-items:center;gap:8px;margin:12px 0;}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:#1e3248;}
+.auth-divider span{color:#2a4060;font-size:9px;letter-spacing:1px;}
+/* footer link */
+.auth-link{color:#3a6a9a;font-size:10px;cursor:pointer;margin-top:10px;display:block;transition:.2s;}
+.auth-link:hover{color:#00ccff;}
 
 /* HUB */
-#hub-screen .auth-card{max-width:380px;max-height:92vh;overflow-y:auto;}
+#hub-screen .auth-card{max-width:380px;max-height:92vh;overflow-y:auto;border-color:#1e3248;}
 .hub-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid #1a3a55;padding-bottom:10px;}
 .hub-title{color:#00ccff;font-size:17px;font-weight:bold;letter-spacing:2px;}
 .hub-section{background:#060d18;border:1px solid #1a3a55;border-radius:8px;padding:10px;margin-bottom:10px;}
@@ -48,8 +124,9 @@ input[type="color"]{height:44px;cursor:pointer;padding:4px;}
 
 /* VR HUD */
 #vr-hud{position:fixed;inset:0;pointer-events:none;z-index:100;}
-#hud-brand{position:absolute;top:10px;right:calc(50% + 8px);font-size:9px;letter-spacing:3px;color:#00ccff;text-shadow:0 0 10px #00ccff;}
-#hud-fps{position:absolute;top:22px;right:calc(50% + 8px);font-size:7px;letter-spacing:2px;color:#1a4466;}
+#hud-brand-l{position:absolute;top:10px;left:calc(25% - 60px);font-size:9px;letter-spacing:3px;color:#00ccff;text-shadow:0 0 10px #00ccff;transform:translateX(-50%);}
+#hud-brand-r{position:absolute;top:10px;left:calc(75% - 60px);font-size:9px;letter-spacing:3px;color:#00ccff;text-shadow:0 0 10px #00ccff;transform:translateX(-50%);}
+#hud-fps{position:absolute;top:22px;left:calc(25% - 30px);font-size:7px;letter-spacing:2px;color:#1a4466;transform:translateX(-50%);}
 #hud-dist-l{position:absolute;top:10px;left:8px;background:rgba(0,0,0,0.65);border:1px solid #00ccff44;padding:5px 10px;border-radius:4px;font-size:10px;color:#00ccff;letter-spacing:2px;}
 #hud-dist-r{position:absolute;top:10px;left:calc(50% + 8px);background:rgba(0,0,0,0.65);border:1px solid #00ccff44;padding:5px 10px;border-radius:4px;font-size:10px;color:#00ccff;letter-spacing:2px;}
 #btn-exit-l{position:absolute;top:8px;right:calc(50% + 8px);background:rgba(0,0,0,0.75);border:1px solid #00ccff44;color:#00ccff;padding:6px 12px;border-radius:5px;font-size:10px;letter-spacing:2px;pointer-events:auto;cursor:pointer;}
@@ -133,53 +210,58 @@ input.adm-inp{width:100%;padding:5px 8px;background:#100000;border:1px solid #ff
 <!-- ============ AUTH SCREEN ============ -->
 <div id="auth-screen" class="auth-overlay">
   <div class="auth-card">
-    <div class="auth-title">NEON.HANDS.VR</div>
-    <div class="auth-sub">MULTIPLAYER P2P · VR EDITION</div>
+    <div class="auth-logo-wrap">
+      <div class="auth-logo-icon">🕹️</div>
+      <div class="auth-title">NEON<span>.</span>VR</div>
+      <div class="auth-sub">MULTIPLAYER P2P · VR EDITION</div>
+    </div>
     <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">🔑 ENTRAR</button>
-      <button class="auth-tab" id="tab-reg" onclick="switchTab('register')">✏️ CRIAR CONTA</button>
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">🔑 Entrar</button>
+      <button class="auth-tab" id="tab-reg" onclick="switchTab('register')">✨ Criar Conta</button>
     </div>
 
     <!-- LOGIN PANEL -->
     <div id="panel-login">
-      <div style="display:flex;gap:0;border:1px solid #1a3a55;border-radius:6px;overflow:hidden;margin-bottom:10px;">
-        <button id="lmode-pass" onclick="setLoginMode('pass')" style="flex:1;padding:7px;background:#00aa44;color:#000;border:none;cursor:pointer;font-weight:bold;font-size:10px;">🔑 Com Senha</button>
-        <button id="lmode-guest" onclick="setLoginMode('guest')" style="flex:1;padding:7px;background:transparent;color:#aaa;border:none;cursor:pointer;font-weight:bold;font-size:10px;">👤 Visitante</button>
+      <div style="display:flex;gap:0;border:1.5px solid #1e3248;border-radius:10px;overflow:hidden;margin-bottom:12px;">
+        <button id="lmode-pass" onclick="setLoginMode('pass')" style="flex:1;padding:8px;background:#00943a;color:#fff;border:none;cursor:pointer;font-weight:800;font-size:10px;transition:.2s;">🔑 Com Senha</button>
+        <button id="lmode-guest" onclick="setLoginMode('guest')" style="flex:1;padding:8px;background:transparent;color:#3a5068;border:none;cursor:pointer;font-weight:800;font-size:10px;transition:.2s;">👤 Visitante</button>
       </div>
       <div id="login-pass-panel">
-        <input id="l-nick" type="text" placeholder="Nickname">
+        <input id="l-nick" type="text" placeholder="Nome de usuário">
         <div style="position:relative;">
           <input id="l-pass" type="password" placeholder="Senha" style="padding-right:40px;">
-          <button onclick="toggleVis('l-pass',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:#446;cursor:pointer;font-size:14px;padding:0;width:auto;margin:0;">👁</button>
+          <button onclick="toggleVis('l-pass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#3a5068;cursor:pointer;font-size:14px;padding:0;width:auto;margin:0;">👁</button>
         </div>
         <input id="l-color" type="color" value="#00ccff">
         <div class="err" id="l-err"></div>
-        <button class="btn btn-cyan" onclick="doLogin()">🔐 ENTRAR</button>
-        <button class="btn btn-dark" onclick="loginSaved()" id="btn-saved">✅ CONTA SALVA</button>
-        <div id="saved-hint" style="color:#00aa44;font-size:9px;margin-top:3px;display:none;"></div>
-        <p onclick="switchTab('register')" style="color:#00ccff;font-size:9px;cursor:pointer;margin-top:8px;">Não tem conta? Criar →</p>
+        <button class="btn btn-cyan" onclick="doLogin()">Entrar</button>
+        <button class="btn btn-dark" onclick="loginSaved()" id="btn-saved">✅ Conta Salva</button>
+        <div id="saved-hint" style="color:#00aa44;font-size:9px;margin-top:4px;display:none;"></div>
+        <div class="auth-divider"><span>ou</span></div>
+        <a class="auth-link" onclick="showForgotPass()">Esqueceu a senha?</a>
+        <a class="auth-link" onclick="switchTab('register')">Não tem conta? <strong style="color:#00ccff;">Criar →</strong></a>
       </div>
       <div id="login-guest-panel" style="display:none;">
         <input id="g-nick" type="text" placeholder="Apelido (opcional)">
         <input id="g-color" type="color" value="#886644">
-        <button class="btn btn-cyan" onclick="loginGuest()">👤 ENTRAR COMO VISITANTE</button>
+        <button class="btn btn-cyan" onclick="loginGuest()">👤 Entrar como Visitante</button>
       </div>
     </div>
 
     <!-- REGISTER PANEL -->
     <div id="panel-reg" style="display:none;">
-      <p style="color:#aaa;font-size:10px;margin-bottom:10px;">Crie sua conta para salvar progresso!</p>
-      <input id="r-nick" type="text" placeholder="Nickname (único)" maxlength="20">
-      <input id="r-email" type="email" placeholder="Email (opcional, para recuperação)">
+      <p style="color:#3a5068;font-size:10px;margin-bottom:12px;">Crie sua conta para salvar progresso!</p>
+      <input id="r-nick" type="text" placeholder="Nome de usuário (único)" maxlength="20">
+      <input id="r-email" type="email" placeholder="Email (para recuperação de senha)">
       <div style="position:relative;">
         <input id="r-pass" type="password" placeholder="Senha" oninput="strengthCheck(this.value,'r-str','pass-hint')" style="padding-right:40px;">
-        <button onclick="toggleVis('r-pass',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:#446;cursor:pointer;font-size:14px;padding:0;width:auto;margin:0;">👁</button>
+        <button onclick="toggleVis('r-pass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#3a5068;cursor:pointer;font-size:14px;padding:0;width:auto;margin:0;">👁</button>
       </div>
       <div class="pstr"><div class="pstr-fill" id="r-str"></div></div>
       <div id="pass-hint" class="pass-hint-txt"></div>
       <div style="position:relative;">
         <input id="r-pass2" type="password" placeholder="Confirmar Senha" style="padding-right:40px;">
-        <button onclick="toggleVis('r-pass2',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:#446;cursor:pointer;font-size:14px;padding:0;width:auto;margin:0;">👁</button>
+        <button onclick="toggleVis('r-pass2',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#3a5068;cursor:pointer;font-size:14px;padding:0;width:auto;margin:0;">👁</button>
       </div>
       <input id="r-color" type="color" value="#00ccff">
       <select id="r-skin">
@@ -189,9 +271,36 @@ input.adm-inp{width:100%;padding:5px 8px;background:#100000;border:1px solid #ff
         <option value="fire">🔥 Mãos Fire</option>
       </select>
       <div class="err" id="r-err"></div>
-      <button class="btn btn-cyan" onclick="doRegister()" style="background:#00aa44;">✅ CRIAR CONTA</button>
-      <button class="btn btn-dark" onclick="switchTab('login')">← Voltar ao Login</button>
+      <button class="btn btn-green" onclick="doRegister()">✅ Criar Conta</button>
+      <a class="auth-link" onclick="switchTab('login')">← Voltar ao Login</a>
     </div>
+  </div>
+</div>
+
+<!-- ============ FORGOT PASSWORD MODAL ============ -->
+<div id="forgot-modal" style="position:fixed;inset:0;background:rgba(0,0,0,0.88);display:none;align-items:center;justify-content:center;z-index:9600;backdrop-filter:blur(8px);">
+  <div style="background:#111923;border:1.5px solid #1e3248;border-radius:18px;padding:26px 22px;width:90%;max-width:320px;text-align:center;">
+    <div style="font-size:28px;margin-bottom:8px;">🔐</div>
+    <div style="color:#fff;font-weight:800;font-size:16px;margin-bottom:4px;">Recuperar Senha</div>
+    <div style="color:#3a5068;font-size:10px;margin-bottom:16px;">Digite seu email para receber o código</div>
+
+    <!-- STEP 1: Email -->
+    <div id="fp-step1">
+      <input id="fp-email" type="email" placeholder="Seu email cadastrado">
+      <div class="err" id="fp-err"></div>
+      <button class="btn btn-cyan" onclick="sendResetCode()" style="margin-top:8px;">📧 Enviar Código</button>
+    </div>
+
+    <!-- STEP 2: Code -->
+    <div id="fp-step2" style="display:none;">
+      <div style="color:#00ff88;font-size:10px;margin-bottom:10px;">✅ Código enviado! Verifique seu email.</div>
+      <input id="fp-code" type="text" placeholder="Código de 6 dígitos" maxlength="6">
+      <input id="fp-newpass" type="password" placeholder="Nova senha">
+      <div class="err" id="fp-err2"></div>
+      <button class="btn btn-green" onclick="applyReset()">✅ Redefinir Senha</button>
+    </div>
+
+    <button onclick="closeForgotPass()" style="margin-top:12px;background:none;border:none;color:#3a5068;cursor:pointer;font-size:11px;">✕ Cancelar</button>
   </div>
 </div>
 
@@ -253,7 +362,8 @@ input.adm-inp{width:100%;padding:5px 8px;background:#100000;border:1px solid #ff
 <!-- ============ VR HUD ============ -->
 <div id="vr-hud" class="hidden">
   <div id="vr-divider"></div>
-  <div id="hud-brand">NEON.HANDS.VR</div>
+  <div id="hud-brand-l">NEON.HANDS.VR</div>
+  <div id="hud-brand-r">NEON.HANDS.VR</div>
   <div id="hud-fps">20 FPS</div>
   <div id="hud-dist-l">TARGET_DIST: 0.0m</div>
   <div id="hud-dist-r">TARGET_DIST: 0.0m</div>
@@ -447,6 +557,17 @@ const ADMIN_PIN = "7777";
 const PREFIX = "neonvr-";
 const MAX_PLAYERS = 8;
 
+// ─── EmailJS Config ─────────────────────────────────────────────
+// 1. Crie conta em https://www.emailjs.com/
+// 2. Crie um Service (ex: Gmail) → copie o Service ID
+// 3. Crie um Email Template com variáveis: {{to_email}}, {{code}}, {{game}}
+// 4. Vá em Account → API Keys → copie a Public Key
+const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';   // ← substitua aqui
+const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // ← substitua aqui
+const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // ← substitua aqui
+let _resetCode = '', _resetEmail = '', _resetNick = '';
+// ────────────────────────────────────────────────────────────────
+
 let myNick = "", myColor = "#00ccff", mySkin = "normal";
 let isAdmin = false, isGuest = false;
 let currentRoomID = "";
@@ -484,9 +605,13 @@ const MINIMAP_RANGE = 40;
 // Accelerometer / Gyro
 let accelActive = false;
 let accelBias = {x:0, y:0, z:9.81};
-let accelSmoothX = 0, accelSmoothY = 0;
+let accelSmoothX = 0, accelSmoothY = 0, accelSmoothZ = 0;
 let gyroRateX = 0, gyroRateY = 0;
 let lastOrientTs = 0;
+// Accel-based camera tracking
+let accelCalPitch = 0;      // calibration zero for pitch
+let accelCalYaw   = 0;      // accumulated yaw from roll-delta integration
+let accelPrevRoll = null;   // previous roll angle for delta-integration
 
 // 3D Chat bubbles
 let chatBubbles3D = []; // [{group, timer, maxTimer, velocity}]
@@ -646,6 +771,89 @@ function saveNewPass(){
 }
 
 // =================================================================
+// FORGOT PASSWORD (EmailJS)
+// =================================================================
+function showForgotPass(){
+  document.getElementById('fp-email').value='';
+  document.getElementById('fp-code').value='';
+  document.getElementById('fp-newpass').value='';
+  document.getElementById('fp-err').textContent='';
+  document.getElementById('fp-err2').textContent='';
+  document.getElementById('fp-step1').style.display='block';
+  document.getElementById('fp-step2').style.display='none';
+  document.getElementById('forgot-modal').style.display='flex';
+  _resetCode='';_resetEmail='';_resetNick='';
+}
+function closeForgotPass(){
+  document.getElementById('forgot-modal').style.display='none';
+}
+
+async function sendResetCode(){
+  const email = document.getElementById('fp-email').value.trim();
+  if(!email){document.getElementById('fp-err').textContent='Digite um email válido.';return;}
+
+  // Find account with this email
+  const accs = getAccounts();
+  let foundNick = null;
+  for(let nick in accs){
+    if(accs[nick].email && accs[nick].email.toLowerCase()===email.toLowerCase()){
+      foundNick=nick;break;
+    }
+  }
+  if(!foundNick){
+    document.getElementById('fp-err').textContent='Nenhuma conta com esse email.';
+    return;
+  }
+
+  // Generate 6-digit code
+  _resetCode  = String(Math.floor(100000+Math.random()*900000));
+  _resetEmail = email;
+  _resetNick  = foundNick;
+
+  // Init EmailJS (safe to call multiple times)
+  try {
+    if(typeof emailjs !== 'undefined'){
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+        to_email: email,
+        code:     _resetCode,
+        game:     'NEON.HANDS.VR',
+        nick:     foundNick
+      });
+    } else {
+      // EmailJS not loaded — show code in alert for dev testing
+      alert('[DEV] Seu código de recuperação: '+_resetCode);
+    }
+  } catch(err){
+    // If EmailJS not configured, show code directly (dev mode)
+    alert('[AVISO] EmailJS não configurado. Código: '+_resetCode);
+  }
+
+  document.getElementById('fp-step1').style.display='none';
+  document.getElementById('fp-step2').style.display='block';
+}
+
+function applyReset(){
+  const enteredCode = document.getElementById('fp-code').value.trim();
+  const newPass     = document.getElementById('fp-newpass').value;
+  if(enteredCode !== _resetCode){
+    document.getElementById('fp-err2').textContent='Código incorreto.';return;
+  }
+  if(newPass.length < 4){
+    document.getElementById('fp-err2').textContent='Senha mínimo 4 caracteres.';return;
+  }
+  const accs = getAccounts();
+  if(!accs[_resetNick]){
+    document.getElementById('fp-err2').textContent='Conta não encontrada.';return;
+  }
+  accs[_resetNick].pass = newPass;
+  saveAccounts(accs);
+  closeForgotPass();
+  showAnnounce('✅ Senha redefinida com sucesso!');
+  switchTab('login');
+}
+
+// =================================================================
 // ROOM SCAN
 // =================================================================
 async function scanRooms(){
@@ -697,7 +905,7 @@ async function grantAllPermissions(){
 
   // Pre-show what will be requested
   setItem('cam',  '📷', 'Câmera (para ver seus braços)', '#557');
-  setItem('gyro', '🎯', 'Giroscópio / Acelerômetro',    '#557');
+  setItem('gyro', '🎯', 'Acelerômetro (controle de câmera)',    '#557');
 
   await new Promise(r => setTimeout(r, 80)); // let DOM render
 
@@ -753,7 +961,7 @@ async function grantAllPermissions(){
         gyroOk = true;
       }
     }
-    if(gyroOk) setItem('gyro','✅','Giroscópio + Acelerômetro ativos','#00ff88');
+    if(gyroOk) setItem('gyro','✅','Acelerômetro ativo ✓','#00ff88');
     else if(typeof DeviceOrientationEvent === 'undefined') setItem('gyro','⚠️','Sensores não disponíveis neste dispositivo','#ff8844');
   } catch(e){
     setItem('gyro','⚠️','Sensores: '+(e.message||e.name),'#ff8844');
@@ -832,14 +1040,32 @@ function handleData(data,senderPeer){
   if(data.type==='ping-room'){const c=connections[senderPeer];if(c&&c.open)c.send({type:'pong-room',playerCount:Object.keys(remotePlayers).length+1});return;}
   if(data.type==='hello'){
     if(bannedSet.has(data.nick)){const c=connections[senderPeer];if(c&&c.open){c.send({type:'kick',reason:'Banido'});setTimeout(()=>{try{c.close();}catch(e){}},400);}return;}
-    createRemotePlayer(senderPeer,data);
-    if(isHost)broadcast({...data,relayed:true},senderPeer);
+    const effectivePeer = data.relayed ? (data.originalPeer || senderPeer) : senderPeer;
+    if(effectivePeer !== myID) createRemotePlayer(effectivePeer, data);
+    if(isHost){
+      // Relay to everyone else, preserving original sender ID
+      broadcast({...data, originalPeer: effectivePeer, relayed:true}, senderPeer);
+      // Send existing players info to the new joiner
+      const newConn = connections[senderPeer];
+      if(newConn && newConn.open){
+        for(let pid in remotePlayers){
+          const rp = remotePlayers[pid];
+          newConn.send({type:'hello', nick:rp.nick, color:rp.color, skin:rp.skin||'normal',
+            x:rp.tpos.x, y:rp.tpos.y, z:rp.tpos.z,
+            ry:rp.try||0, gesture:rp.gesture||0,
+            originalPeer: pid, relayed:true});
+        }
+      }
+    }
     updatePList();return;
   }
   if(data.type==='move'){
-    const rp=remotePlayers[senderPeer];
-    if(rp){rp.tpos={x:data.x,y:data.y,z:data.z};rp.try=data.ry;rp.gesture=data.gesture;}
-    if(isHost)broadcast(data,senderPeer);return;
+    const effectivePeer = data.originalPeer || senderPeer;
+    if(effectivePeer !== myID){
+      const rp=remotePlayers[effectivePeer];
+      if(rp){rp.tpos={x:data.x,y:data.y,z:data.z};rp.try=data.ry;rp.gesture=data.gesture;}
+    }
+    if(isHost)broadcast({...data, originalPeer:effectivePeer, relayed:true},senderPeer);return;
   }
   if(data.type==='chat'){
     if(mutedSet.has(data.nick))return;
@@ -1526,6 +1752,7 @@ function makeNickSprite(text, colorHex){
 }
 
 function createRemotePlayer(pid,data){
+  if(pid===myID)return; // Never create avatar for self
   if(remotePlayers[pid])return;
   const avatar = buildPlayerAvatar(data.color||'#00ff88', data.nick||'Player');
   avatar.position.set(data.x||0,data.y||0,data.z||0);
@@ -1556,81 +1783,91 @@ function updatePList(){
 }
 
 // =================================================================
-// GYRO / ORIENTATION / ACCELEROMETER
+// ACELERÔMETRO — controle de câmera como giroscópio
+// (sem usar DeviceOrientation/Gyroscope — apenas DeviceMotion)
 // =================================================================
 function requestGyro(){
-  // Called only when iOS permission already granted via grantAllPermissions
-  setupGyroOrientation();
   setupAccelerometer();
 }
-
 function setupGyro(){
-  // Called on non-iOS - auto setup both
-  setupGyroOrientation();
   setupAccelerometer();
 }
-
-function setupGyroOrientation(){
-  // DeviceOrientation: smooth gyroscope-based camera (yaw via compass+gyro)
-  window.addEventListener('deviceorientation', e=>{
-    if(e.beta==null)return;
-    gyroActive=true;
-    const now=performance.now();
-    const dtOr=Math.min((now-lastOrientTs)/1000, 0.05);
-    lastOrientTs=now;
-
-    // beta = pitch (-180 to 180), gamma = roll (-90 to 90)
-    const betaRad = THREE.MathUtils.degToRad((e.beta||0)-90);  // tilt forward/back
-    const gammaRad = THREE.MathUtils.degToRad(e.gamma||0);     // tilt left/right
-
-    // Gyro rate (smooth delta-based)
-    const targetX = -betaRad * 0.85;
-    const targetY = -gammaRad * 1.15;
-
-    // Complementary filter: 90% gyro delta, 10% absolute
-    gyroRateX += (targetX - gyroRateX) * 0.12;
-    gyroRateY += (targetY - gyroRateY) * 0.12;
-
-    camTarget.x = THREE.MathUtils.clamp(gyroRateX, -1.3, 1.3);
-    camTarget.y = gyroRateY;
-  }, true);
-}
+// setupGyroOrientation is intentionally DISABLED — we use accelerometer only
+function setupGyroOrientation(){ /* disabled — accel-only mode */ }
 
 function setupAccelerometer(){
-  // DeviceMotion: use accelerationIncludingGravity to derive tilt
-  // Acts as a fallback/blend when gyro isn't giving yaw (portrait-locked)
-  if(typeof DeviceMotionEvent==='undefined') return;
+  if(typeof DeviceMotionEvent === 'undefined'){
+    console.warn('[Accel] DeviceMotionEvent não suportado');
+    return;
+  }
 
-  window.addEventListener('devicemotion', e=>{
+  const LP = 0.08; // low-pass factor — menor = mais suave
+
+  window.addEventListener('devicemotion', e => {
     const a = e.accelerationIncludingGravity;
-    if(!a||a.x==null) return;
+    if(!a || a.x == null) return;
+
     accelActive = true;
+    gyroActive  = true; // disable touch-look (accel takes over)
 
-    // Gravity vector → tilt angles (low-pass filter)
-    const alpha = 0.08; // smoothing (lower = smoother/more lag)
-    accelSmoothX += alpha * (a.x - accelSmoothX);
-    accelSmoothY += alpha * (a.y - accelSmoothY);
+    // ─── Low-pass filter (remove noise & vibration) ───
+    accelSmoothX += LP * (a.x - accelSmoothX);
+    accelSmoothY += LP * (a.y - accelSmoothY);
+    accelSmoothZ += LP * (a.z - accelSmoothZ);
 
-    // If gyro is active, let gyro handle it (better accuracy)
-    // But still blend accel for extra responsiveness on pitch
-    if(!gyroActive){
-      const pitchAcc  = Math.atan2(accelSmoothY - accelBias.y, accelBias.z) * 0.7;
-      const rollAcc   = Math.atan2(accelSmoothX - accelBias.x, accelBias.z) * 1.0;
-      camTarget.x = THREE.MathUtils.clamp(pitchAcc, -1.3, 1.3);
-      camTarget.y += -rollAcc * 0.04; // accel gives roll → integrate for yaw approx
+    const gx = accelSmoothX;
+    const gy = accelSmoothY;
+    const gz = accelSmoothZ;
+
+    // ─── PITCH — olhar para cima / para baixo ───────────────────
+    // Phone em portrait upright: gy ≈ -9.81, gx ≈ 0, gz ≈ 0
+    // Inclina para olhar para CIMA (topo sai de você): gz fica negativo
+    // atan2(-gz, -gy)  →  0 quando upright, POSITIVO ao olhar pra cima  ✓
+    const rawPitch = Math.atan2(-gz, -gy);
+    // Subtrai calibração e mapeia para camTarget.x (positivo = cima)
+    camTarget.x = THREE.MathUtils.clamp(
+      (rawPitch - accelCalPitch) * 1.15,
+      -1.3, 1.3
+    );
+
+    // ─── YAW SIMULADO — virar cabeça esquerda / direita ─────────
+    // Usamos a VARIAÇÃO do ângulo de roll para acumular yaw (simula giroscópio)
+    // roll = atan2(gx, sqrt(gy²+gz²)) — muda quando telefone gira horizontalmente
+    const roll = Math.atan2(gx, Math.sqrt(gy*gy + gz*gz));
+
+    if(accelPrevRoll !== null){
+      let dRoll = roll - accelPrevRoll;
+      // Normaliza delta para [-π, π]
+      if(dRoll >  Math.PI) dRoll -= 2 * Math.PI;
+      if(dRoll < -Math.PI) dRoll += 2 * Math.PI;
+      // Só integra movimentos razoáveis (filtra outliers)
+      if(Math.abs(dRoll) < 0.25){
+        accelCalYaw -= dRoll * 2.2; // sinal negativo: girar direita → yaw direita
+      }
     }
+    accelPrevRoll = roll;
+    camTarget.y = accelCalYaw;
+
   }, true);
+
+  // Auto-calibra o pitch após 1.5 s (dá tempo para os valores estabilizarem)
+  setTimeout(() => {
+    if(accelActive){
+      accelCalPitch = Math.atan2(-accelSmoothZ, -accelSmoothY);
+    }
+  }, 1500);
 
   document.getElementById('btn-accel-cal').classList.add('show');
 }
 
 function calibrateAccel(){
-  // Set current orientation as "zero" reference
-  accelBias.x = accelSmoothX;
-  accelBias.y = accelSmoothY;
-  camTarget.x = 0;
-  camTarget.y = 0;
-  gyroRateX = 0; gyroRateY = 0;
+  // Seta posição atual como "olhando para frente" (zero)
+  accelCalPitch = Math.atan2(-accelSmoothZ, -accelSmoothY);
+  accelCalYaw   = 0;
+  camTarget.x   = 0;
+  camTarget.y   = 0;
+  camEuler.x    = 0;
+  camEuler.y    = 0;
   showAnnounce('⊕ Acelerômetro calibrado!');
 }
 
@@ -1881,6 +2118,7 @@ function exitVR(){
   if(renderer){renderer.dispose();renderer=null;}
   scene=null;camera=null;playerHands=null;minimapCtx=null;sunLight=null;skyMesh=null;
   xrHandsActive=false; gyroActive=false; accelActive=false; webcamActive=false;
+  accelPrevRoll=null; accelCalYaw=0; accelCalPitch=0;
   document.getElementById('hub-screen').classList.remove('hidden');
 }
 
