@@ -20741,11 +20741,73 @@ def loop(ms,fn): js._js_loop([ms,fn])
         _arVideoEl.style.cssText='position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1;pointer-events:none;transform:scaleX(-1);';
         document.body.insertBefore(_arVideoEl,document.body.firstChild);
 
+        // ── Verificar se o navegador suporta getUserMedia ──
+        if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+            throw new Error(arT(
+                'Seu navegador não suporta acesso à câmera. Use Chrome ou Firefox atualizado.',
+                'Your browser does not support camera access. Use an updated Chrome or Firefox.'
+            ));
+        }
+
+        // ── Mostrar tela de pré-permissão antes do popup do browser ──
+        await new Promise((resolvePerm) => {
+            const pre = document.createElement('div');
+            pre.id = 'ar-pre-permission';
+            pre.style.cssText = 'position:fixed;inset:0;z-index:60000;background:rgba(0,0,0,0.96);display:flex;align-items:center;justify-content:center;font-family:Segoe UI,sans-serif;';
+            pre.innerHTML = `
+                <div style="background:linear-gradient(160deg,#0a1a0a,#0d0d1a);border:2px solid #00ff88;border-radius:20px;padding:28px 24px;max-width:320px;width:88%;text-align:center;box-shadow:0 0 60px rgba(0,255,136,0.25);">
+                    <div style="font-size:56px;margin-bottom:12px;filter:drop-shadow(0 0 16px #00ff88);">📸</div>
+                    <h2 style="color:#00ff88;font-size:18px;margin:0 0 10px;font-weight:bold;">
+                        ${arT('Permissão de Câmera','Camera Permission')}
+                    </h2>
+                    <p style="color:#ccc;font-size:13px;line-height:1.6;margin:0 0 6px;">
+                        ${arT('O Modo AR precisa da sua <b>câmera traseira</b> para mostrar o mundo real por trás do jogo.','AR Mode needs your <b>rear camera</b> to show the real world behind the game.')}
+                    </p>
+                    <p style="color:#888;font-size:12px;line-height:1.5;margin:0 0 20px;">
+                        ${arT('Na próxima tela, toque em <b style="color:#ffcc00">Permitir</b> quando o browser pedir acesso.','On the next screen, tap <b style="color:#ffcc00">Allow</b> when the browser asks for access.')}
+                    </p>
+                    <div style="display:flex;gap:10px;">
+                        <button onclick="document.getElementById('ar-pre-permission').remove();window._arPermCancel=true;" style="flex:1;padding:11px;background:#1a0000;color:#ff6666;border:1px solid #ff4444;border-radius:10px;cursor:pointer;font-size:13px;">
+                            ${arT('Cancelar','Cancel')}
+                        </button>
+                        <button id="ar-perm-ok-btn" style="flex:2;padding:12px;background:linear-gradient(90deg,#00aa44,#00cc66);color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:bold;box-shadow:0 4px 20px rgba(0,255,136,0.3);">
+                            ${arT('📸 Permitir Câmera','📸 Allow Camera')}
+                        </button>
+                    </div>
+                </div>`;
+            document.body.appendChild(pre);
+            document.getElementById('ar-perm-ok-btn').onclick = () => {
+                pre.remove();
+                resolvePerm();
+            };
+        });
+
+        // Usuário cancelou antes do popup
+        if(window._arPermCancel){ window._arPermCancel=false; throw new Error(arT('Permissão cancelada pelo usuário.','Permission cancelled by user.')); }
+
+        // ── Solicitar câmera (agora o popup do browser faz sentido) ──
         try{
             _arCamStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:640,height:480},audio:false});
             _arVideoEl.srcObject=_arCamStream;
             await _arVideoEl.play();
-        }catch(err){ throw new Error(arT('Câmera negada: ','Camera denied: ')+err.message); }
+        }catch(err){
+            // Dar instruções claras dependendo do tipo de erro
+            const name = err.name || '';
+            let msg;
+            if(name==='NotAllowedError'||name==='PermissionDeniedError'){
+                msg = arT(
+                    'Câmera bloqueada. Vá em Configurações do navegador → Permissões → Câmera e permita este site.',
+                    'Camera blocked. Go to browser Settings → Permissions → Camera and allow this site.'
+                );
+            } else if(name==='NotFoundError'||name==='DevicesNotFoundError'){
+                msg = arT('Nenhuma câmera encontrada no dispositivo.','No camera found on this device.');
+            } else if(name==='NotReadableError'){
+                msg = arT('Câmera em uso por outro aplicativo. Feche-o e tente novamente.','Camera in use by another app. Close it and try again.');
+            } else {
+                msg = arT('Erro ao acessar câmera: ','Camera error: ') + err.message;
+            }
+            throw new Error(msg);
+        }
 
         // Tornar scene transparente
         if(typeof scene!=='undefined'&&scene){ _arSavedBg=scene.background; _arSavedFog=scene.fog; scene.background=null; scene.fog=null; }
